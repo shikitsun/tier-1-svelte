@@ -48,7 +48,7 @@
   }
 </script>
 
-<div class="app">
+<main class="app">
   <div class="container">
     <h1>Binary to decimal</h1>
     <div class="inputs">
@@ -71,21 +71,12 @@
       />
     </div>
   </div>
-</div>
+</main>
 
 <style>
   :root {
     --invalid-color: rgb(160, 50, 50);
     --primary-color: rgb(49, 120, 226);
-  }
-
-  :global(body) {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-
-  .app {
-    width: 100vw;
-    height: 100vh;
   }
 
   .app,
