@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import BorderMovable from '$lib/components/BorderMovable.svelte';
+  import { debounce } from '$lib';
 
   let border = createBorder();
   let mounted = false;
@@ -15,12 +16,19 @@
     border = parseString(hash.replace('#', '')) || border;
   });
 
+  const debounceUpdate = debounce(
+    /** @param {import('$lib/border-radius').Border} border */ (border) => {
+      // no need use localStorage, because this is not production
+      // but may replaced with it as well if needed
+      window.location.hash = formString(border);
+    },
+    400
+  );
+
   $: borderRadius = formString(border, ' / ', ' ', '%');
   // updates only if has browser and mounted later (to not override old)
   $: if (browser && mounted) {
-    // no need use localStorage, because this is not production
-    // but may replaced with it as well if needed
-    window.location.hash = formString(border);
+    debounceUpdate(border);
   }
 </script>
 
