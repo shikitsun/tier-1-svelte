@@ -14,7 +14,7 @@
 
 const PART_SEPARATOR = '.';
 const DEFAULT_SEPARATOR = '-';
-const RADIUSES_KEYS = Object.freeze(['topLeft', 'topRight', 'bottomLeft', 'bottomRight']);
+const RADIUS_KEYS = Object.freeze(['topLeft', 'topRight', 'bottomLeft', 'bottomRight']);
 
 /**
  * Creates empty radius
@@ -25,19 +25,20 @@ const createEmptyRadius = () => ({ main: 0, primary: 0 });
  * Creates empty border
  * @returns {Border}
  */
-const createBorder = () =>
+export const createBorder = () =>
   // @ts-ignore
-  RADIUSES_KEYS.reduce((key, curr) => ({ ...curr, [key]: createEmptyRadius() }), {});
+  RADIUS_KEYS.reduce((br, key) => ({ ...br, [key]: createEmptyRadius() }), {});
 
 /**
  * Forms url part out of radius
  * @param {Radius[]} radiuses which use to form
  * @param {keyof Radius} key retrieve from `radius`
  * @param {string} [separator] between el
+ * @param {string} [suffix] append to each radius
  * @returns radius in URL representation
  */
-const formURLPart = (radiuses, key, separator = PART_SEPARATOR) =>
-  radiuses.map((r) => r[key]).join(separator);
+const formStringPart = (radiuses, key, separator = PART_SEPARATOR, suffix = '') =>
+  radiuses.map((r) => `${r[key]}${suffix}`).join(separator);
 
 /**
  * Form array of radiuses from `border`
@@ -54,12 +55,24 @@ const formRadiuses = (border) => [
 /**
  * Forms url from provided border
  * @param {Border} border a border to form url from
- * @param {string} [separator] between radiuses
+ * @param {string} [separator] between parts of radiuses
+ * @param {string} [partSeparator] between radiuses
+ * @param {string} [suffix] append to each radius in part
  * @returns {string} url of border
  */
-const formURL = (border, separator = DEFAULT_SEPARATOR) => {
+export const formString = (
+  border,
+  separator = DEFAULT_SEPARATOR,
+  partSeparator = undefined,
+  suffix = undefined
+) => {
   const radiuses = formRadiuses(border);
-  return `${formURLPart(radiuses, 'main')}${separator}${formURLPart(radiuses, 'primary')}`;
+  return `${formStringPart(radiuses, 'main', partSeparator, suffix)}${separator}${formStringPart(
+    radiuses,
+    'primary',
+    partSeparator,
+    suffix
+  )}`;
 };
 
 /**
@@ -68,7 +81,7 @@ const formURL = (border, separator = DEFAULT_SEPARATOR) => {
  * @param {string} separator between radiuses
  * @returns {number[]} parsed radiuses
  */
-const parseURLPart = (radiuses, separator = PART_SEPARATOR) =>
+const parseStringPart = (radiuses, separator = PART_SEPARATOR) =>
   radiuses.split(separator).map(Number);
 
 /**
@@ -86,7 +99,7 @@ const fillBorderParts = (border, key, values) => {
   const result = JSON.parse(JSON.stringify(border));
   let i = 0;
   for (const radius of Object.values(result)) {
-    radius[key] = values[i];
+    radius[key] = values[i] || 0;
     i++;
   }
   return result;
@@ -98,13 +111,13 @@ const fillBorderParts = (border, key, values) => {
  * @param {string} [separator] between parts
  * @returns {Border} parsed border
  */
-const parseURL = (url, separator = DEFAULT_SEPARATOR) => {
+export const parseString = (url, separator = DEFAULT_SEPARATOR) => {
   const parts = url.split(separator);
   /** @type {Border} */
   const border = createBorder();
   return fillBorderParts(
-    fillBorderParts(border, 'main', parseURLPart(parts[0])),
+    fillBorderParts(border, 'main', parseStringPart(parts[0])),
     'primary',
-    parseURLPart(parts[1])
+    parseStringPart(parts[1])
   );
 };
