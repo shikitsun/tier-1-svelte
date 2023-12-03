@@ -25,6 +25,8 @@
   let offsetY = 'var(--offset)';
   let active = false;
 
+  $: scale = length / 100;
+
   $: {
     // reset all properties
     x = '0px';
@@ -66,13 +68,7 @@
    * @param {MouseEvent} ev
    */
   function handleMouseMove(ev) {
-    let change = 0;
-    if (direction === 'horizontal') {
-      change = ev.movementX;
-    } else if (direction === 'vertical') {
-      change = ev.movementY;
-    }
-    // TODO round change & make less harsh on move
+    const change = ev[`movement${direction === 'horizontal' ? 'X' : 'Y'}`] / scale;
     value = Math.max(Math.min((value || 0) + change, 100), 0);
   }
 </script>

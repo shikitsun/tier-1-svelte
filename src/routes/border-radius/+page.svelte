@@ -16,7 +16,7 @@
     border = parseString(hash.replace('#', '')) || border;
   });
 
-  const debounceUpdate = debounce(
+  const update = debounce(
     /** @param {import('$lib/border-radius').Border} border */ (border) => {
       // no need use localStorage, because this is not production
       // but may replaced with it as well if needed
@@ -28,7 +28,7 @@
   $: borderRadius = formString(border, ' / ', ' ', '%');
   // updates only if has browser and mounted later (to not override old)
   $: if (browser && mounted) {
-    debounceUpdate(border);
+    update(border);
   }
 </script>
 
