@@ -1,4 +1,6 @@
 <script>
+  import { createEventDispatcher } from 'svelte';
+
   /**
    * Current value of radius
    * @type {number}
@@ -18,6 +20,11 @@
    * @type {Boolean}
    */
   export let atEnd = false;
+
+  /**
+   * @type {import('svelte').EventDispatcher<{change: number}>}
+   */
+  const dispatch = createEventDispatcher();
 
   let x = '0px';
   let y = '0px';
@@ -71,6 +78,14 @@
     const change = ev[`movement${direction === 'horizontal' ? 'X' : 'Y'}`] / scale;
     value = Math.max(Math.min((value || 0) + change, 100), 0);
   }
+
+  /**
+   * Fires on change with new value
+   * @param {number} val new value
+   */
+  const onChange = (val) => dispatch('change', val);
+
+  $: onChange(value);
 </script>
 
 <div
