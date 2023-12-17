@@ -19,7 +19,7 @@
    * controls where movable should be positioned in opposite axis
    * @type {Boolean}
    */
-  export let atEnd = false;
+  export let reverse = false;
 
   /**
    * @type {import('svelte').EventDispatcher<{change: number}>}
@@ -37,7 +37,7 @@
     x = '0px';
     y = '0px';
     const position = `${(length / 100) * value}px`;
-    const oppositePosition = `${atEnd ? length : 0}px`;
+    const oppositePosition = `${reverse ? length : 0}px`;
 
     if (direction === 'horizontal') {
       x = position;
