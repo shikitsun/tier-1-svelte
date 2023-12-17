@@ -110,8 +110,8 @@
     align-items: center;
     font-size: 1rem;
     line-height: 1;
-    --p: 4px;
-    --br: 4px;
+    --p: 6px;
+    --br: 6px;
   }
 
   .code {
@@ -134,14 +134,18 @@
     text-align: inherit;
     border-top-right-radius: var(--br);
     border-bottom-right-radius: var(--br);
-    background-color: #eee;
+    background-color: #18e;
+
+    transition-property: background-color;
+    transition-duration: 150ms;
+    color: white;
   }
 
   .btn:hover {
-    background-color: #aaa;
+    background-color: #18ee;
   }
 
   .btn:active {
-    background-color: #444;
+    background-color: #18ec;
   }
 </style>
