@@ -28,8 +28,6 @@
 
   let x = '0px';
   let y = '0px';
-  let offsetX = 'var(--offset)';
-  let offsetY = 'var(--offset)';
   let active = false;
 
   $: scale = length / 100;
@@ -38,23 +36,15 @@
     // reset all properties
     x = '0px';
     y = '0px';
-    offsetX = 'var(--offset)';
-    offsetY = 'var(--offset)';
     const position = `${(length / 100) * value}px`;
     const oppositePosition = `${atEnd ? length : 0}px`;
 
     if (direction === 'horizontal') {
       x = position;
       y = oppositePosition;
-      if (atEnd) {
-        offsetY = '0px';
-      }
     } else if (direction === 'vertical') {
       y = position;
       x = oppositePosition;
-      if (atEnd) {
-        offsetX = '0px';
-      }
     }
   }
 
@@ -94,8 +84,6 @@
   role="button"
   style:--x={x}
   style:--y={y}
-  style:--offsetX={offsetX}
-  style:--offsetY={offsetY}
   class:active
 />
 
@@ -105,8 +93,8 @@
     --offset: 7px;
     --s: var(--size, var(--default-size));
     position: absolute;
-    left: calc(var(--x) - var(--offsetX));
-    top: calc(var(--y) - var(--offsetY));
+    left: calc(var(--baseX, 0px) + var(--x) - var(--offsetX, var(--offset, 7px)));
+    top: calc(var(--baseY, 0px) + var(--y) - var(--offsetY, var(--offset, 7px)));
     width: var(--s);
     height: var(--s);
     background-color: var(--bg, #333);
