@@ -5,7 +5,7 @@
   import BorderMovable from '$lib/components/BorderMovable.svelte';
   import { debounce } from '$lib';
 
-  let border = createBorder();
+  let border = parseString('0.100.100.0.0-100.0.0.100');
   let mounted = false;
   let overlayWidth = 0;
   let overlayHeight = 0;
@@ -40,6 +40,9 @@
         bind:value={border.topLeft.main}
         direction="horizontal"
         length={overlayWidth}
+        on:change={({ detail }) => {
+          border.topRight.main = 100 - detail;
+        }}
       />
     </div>
   </div>
