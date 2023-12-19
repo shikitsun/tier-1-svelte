@@ -14,7 +14,12 @@
 
 const PART_SEPARATOR = '.';
 const DEFAULT_SEPARATOR = '-';
+/**
+ * @type {Readonly<['topLeft', 'topRight', 'bottomLeft', 'bottomRight']>};
+ */
 const RADIUS_KEYS = Object.freeze(['topLeft', 'topRight', 'bottomLeft', 'bottomRight']);
+export const BASE_BORDER = '0.100.0.100-100.0.100.0';
+export const BASE_BORDER2 = '10.10.10.10-10.10.10.10';
 
 /**
  * Creates empty radius
@@ -97,10 +102,8 @@ const fillBorderParts = (border, key, values) => {
    * @type {typeof border}
    */
   const result = JSON.parse(JSON.stringify(border));
-  let i = 0;
-  for (const radius of Object.values(result)) {
-    radius[key] = values[i] || 0;
-    i++;
+  for (let i = 0, l = values.length; i < l; i++) {
+    result[RADIUS_KEYS[i]][key] = values[i] || 0;
   }
   return result;
 };
