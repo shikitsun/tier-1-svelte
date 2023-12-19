@@ -44,6 +44,37 @@
           border.topRight.main = 100 - detail;
         }}
       />
+
+      <BorderMovable
+        bind:value={border.topRight.primary}
+        direction="vertical"
+        length={overlayHeight}
+        on:change={({ detail }) => {
+          border.bottomRight.primary = 100 - detail;
+        }}
+        --baseX={overlayWidth + 'px'}
+        --offsetX={5 + 'px'}
+      />
+
+      <BorderMovable
+        bind:value={border.topLeft.primary}
+        direction="vertical"
+        length={overlayHeight}
+        on:change={({ detail }) => {
+          border.bottomLeft.primary = 100 - detail;
+        }}
+      />
+
+      <BorderMovable
+        bind:value={border.bottomLeft.main}
+        direction="horizontal"
+        length={overlayWidth}
+        on:change={({ detail }) => {
+          border.bottomRight.main = 100 - detail;
+        }}
+        --baseY={overlayHeight + 'px'}
+        --offsetX={5 + 'px'}
+      />
     </div>
   </div>
 

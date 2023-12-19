@@ -37,14 +37,11 @@
     x = '0px';
     y = '0px';
     const position = `${(length / 100) * value}px`;
-    const oppositePosition = `${reverse ? length : 0}px`;
 
     if (direction === 'horizontal') {
       x = position;
-      y = oppositePosition;
     } else if (direction === 'vertical') {
       y = position;
-      x = oppositePosition;
     }
   }
 
@@ -84,6 +81,7 @@
   role="button"
   style:--x={x}
   style:--y={y}
+  style:--reverse={reverse ? -1 : 1}
   class:active
 />
 
@@ -93,8 +91,12 @@
     --offset: 7px;
     --s: var(--size, var(--default-size));
     position: absolute;
-    left: calc(var(--baseX, 0px) + var(--x) - var(--offsetX, var(--offset, 7px)));
-    top: calc(var(--baseY, 0px) + var(--y) - var(--offsetY, var(--offset, 7px)));
+    left: calc(
+      var(--baseX, 0px) + (var(--x) * var(--reverse, 1)) - var(--offsetX, var(--offset, 7px))
+    );
+    top: calc(
+      var(--baseY, 0px) + (var(--y) * var(--reverse, 1)) - var(--offsetY, var(--offset, 7px))
+    );
     width: var(--s);
     height: var(--s);
     background-color: var(--bg, #333);
