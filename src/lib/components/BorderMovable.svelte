@@ -65,7 +65,7 @@
    * @param {MouseEvent} ev
    */
   function handleMouseMove(ev) {
-    const change = (ev[`movement${movementKey}`] / scale) * reverseFactor;
+    const change = Math.round(ev[`movement${movementKey}`] / scale) * reverseFactor;
     value = Math.max(Math.min((value || 0) + change, 100), 0);
   }
 
