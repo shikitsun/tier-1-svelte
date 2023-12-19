@@ -31,6 +31,7 @@
   let active = false;
 
   $: scale = length / 100;
+  $: reverseFactor = reverse ? -1 : 1;
 
   $: {
     // reset all properties
@@ -62,7 +63,8 @@
    * @param {MouseEvent} ev
    */
   function handleMouseMove(ev) {
-    const change = ev[`movement${direction === 'horizontal' ? 'X' : 'Y'}`] / scale;
+    const change =
+      (ev[`movement${direction === 'horizontal' ? 'X' : 'Y'}`] / scale) * reverseFactor;
     value = Math.max(Math.min((value || 0) + change, 100), 0);
   }
 
@@ -81,7 +83,7 @@
   role="button"
   style:--x={x}
   style:--y={y}
-  style:--reverse={reverse ? -1 : 1}
+  style:--reverse={reverseFactor}
   class:active
 />
 
