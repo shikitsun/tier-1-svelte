@@ -49,6 +49,12 @@
       border.bottomRight.main = 100 - border.bottomLeft.main;
     }
   }
+
+  function copy() {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(formString(border));
+    }
+  }
 </script>
 
 <main>
@@ -173,7 +179,7 @@
           style:width={`calc(${borderRadius.length + 'ch'} + var(--p) * 2)`}
           id="borderRadiusOut"
         />
-        <button class="btn">Copy</button>
+        <button class="btn" on:click={copy}>Copy</button>
       </div>
     </div>
 
