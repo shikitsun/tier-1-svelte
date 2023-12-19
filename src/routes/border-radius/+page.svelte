@@ -80,6 +80,7 @@
           length={overlayWidth}
           reverse
           --baseX={overlayWidth + 'px'}
+          --offsetX={'5px'}
         />
 
         <BorderMovable
@@ -97,6 +98,7 @@
           reverse
           --baseX={overlayWidth + 'px'}
           --baseY={overlayHeight + 'px'}
+          --offsetX={'5px'}
         />
 
         <BorderMovable
@@ -106,6 +108,7 @@
           reverse
           --baseX={overlayWidth + 'px'}
           --baseY={overlayHeight + 'px'}
+          --offsetX={'5px'}
         />
 
         <BorderMovable
