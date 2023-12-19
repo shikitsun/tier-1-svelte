@@ -22,7 +22,7 @@
     /** @param {import('$lib/border-radius').Border} border */ (border) => {
       // no need use localStorage, because this is not production
       // but may replaced with it as well if needed
-      // window.location.hash = formString(border);
+      window.location.hash = formString(border);
     },
     400
   );
@@ -33,14 +33,6 @@
     update(border);
   }
 
-  $: if (!fullControl) {
-    // if switched from fullControl -> no fullControl
-    border.topRight.main = 100 - border.topLeft.main;
-    border.bottomRight.primary = 100 - border.topRight.primary;
-    border.bottomLeft.primary = 100 - border.topLeft.primary;
-    border.bottomRight.main = 100 - border.bottomLeft.main;
-  }
-
   /**
    *
    * @param {Event} ev
@@ -48,9 +40,14 @@
   function checkBorder(ev) {
     const { checked } = /** @type {HTMLInputElement} */ (ev.target);
     const borderStr = formString(border);
-    console.log(checked, borderStr, borderStr === BASE_BORDER, borderStr === BASE_BORDER2);
     if (checked && borderStr === BASE_BORDER) border = parseString(BASE_BORDER2);
     else if (!checked && borderStr === BASE_BORDER2) border = parseString(BASE_BORDER);
+    if (!checked) {
+      border.topRight.main = 100 - border.topLeft.main;
+      border.bottomLeft.primary = 100 - border.topRight.primary;
+      border.bottomRight.primary = 100 - border.topLeft.primary;
+      border.bottomRight.main = 100 - border.bottomLeft.main;
+    }
   }
 </script>
 
@@ -88,7 +85,7 @@
         />
 
         <BorderMovable
-          bind:value={border.bottomRight.main}
+          bind:value={border.bottomLeft.main}
           direction="horizontal"
           length={overlayWidth}
           reverse
@@ -97,7 +94,7 @@
         />
 
         <BorderMovable
-          bind:value={border.bottomRight.primary}
+          bind:value={border.bottomLeft.primary}
           direction="vertical"
           length={overlayHeight}
           reverse
@@ -106,14 +103,14 @@
         />
 
         <BorderMovable
-          bind:value={border.bottomLeft.main}
+          bind:value={border.bottomRight.main}
           direction="horizontal"
           length={overlayWidth}
           --baseY={overlayHeight + 'px'}
         />
 
         <BorderMovable
-          bind:value={border.bottomLeft.primary}
+          bind:value={border.bottomRight.primary}
           direction="vertical"
           length={overlayHeight}
           reverse
@@ -134,7 +131,7 @@
           direction="vertical"
           length={overlayHeight}
           on:change={({ detail }) => {
-            border.bottomRight.primary = 100 - detail;
+            border.bottomLeft.primary = 100 - detail;
           }}
           --baseX={overlayWidth + 'px'}
           --offsetX={5 + 'px'}
@@ -145,7 +142,7 @@
           direction="vertical"
           length={overlayHeight}
           on:change={({ detail }) => {
-            border.bottomLeft.primary = 100 - detail;
+            border.bottomRight.primary = 100 - detail;
           }}
         />
 
@@ -153,10 +150,12 @@
           bind:value={border.bottomLeft.main}
           direction="horizontal"
           length={overlayWidth}
+          reverse
           on:change={({ detail }) => {
             border.bottomRight.main = 100 - detail;
           }}
           --baseY={overlayHeight + 'px'}
+          --baseX={overlayWidth + 'px'}
           --offsetX={5 + 'px'}
         />
       {/if}

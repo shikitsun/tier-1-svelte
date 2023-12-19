@@ -32,6 +32,8 @@
 
   $: scale = length / 100;
   $: reverseFactor = reverse ? -1 : 1;
+  $: /** @type {'X' | 'Y'} */
+  movementKey = direction === 'horizontal' ? 'X' : 'Y';
 
   $: {
     // reset all properties
@@ -63,8 +65,7 @@
    * @param {MouseEvent} ev
    */
   function handleMouseMove(ev) {
-    const change =
-      (ev[`movement${direction === 'horizontal' ? 'X' : 'Y'}`] / scale) * reverseFactor;
+    const change = (ev[`movement${movementKey}`] / scale) * reverseFactor;
     value = Math.max(Math.min((value || 0) + change, 100), 0);
   }
 
