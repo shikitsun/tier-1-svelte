@@ -53,8 +53,8 @@ const formStringPart = (radiuses, key, separator = PART_SEPARATOR, suffix = '') 
 const formRadiuses = (border) => [
   border.topLeft,
   border.topRight,
-  border.bottomRight,
-  border.bottomLeft
+  border.bottomLeft,
+  border.bottomRight
 ];
 
 /**
