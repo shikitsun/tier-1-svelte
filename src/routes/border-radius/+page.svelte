@@ -202,7 +202,7 @@
 
 <style>
   :global(body) {
-    background-color: #0f0f0f;
+    background-color: #121212;
     color: #bbb;
   }
 
@@ -232,7 +232,7 @@
   }
 
   .fig {
-    background-color: #22a5ee;
+    background: linear-gradient(60deg, #2a9d8f, #22a5ee);
     width: var(--width);
     height: var(--height);
   }

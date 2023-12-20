@@ -105,21 +105,40 @@
     background-color: var(--bg, #333);
     border: var(--bw, 1px) solid var(--bc, #ccc);
     cursor: pointer;
+    transition-property: background-color border-color;
+    transition-duration: 150ms;
+  }
+
+  div:hover {
+    background-color: #18ee;
+    border-color: #333;
   }
 
   div::after {
     content: '';
+    position: absolute;
     display: block;
     width: var(--s);
     height: var(--s);
-    background-color: #000;
+    background-color: #ccc;
     opacity: 0;
-    transition-property: opacity;
+    transition-property: opacity transform;
     transition-duration: 150ms;
   }
 
   div:hover::after {
     opacity: 0.2;
+    transform: scale(2);
+  }
+
+  div:active {
+    background-color: #18ef;
+    border-color: #333;
+  }
+
+  div:active::after {
+    opacity: 0.4;
+    transform: scale(2.1);
   }
 
   .active::after {
