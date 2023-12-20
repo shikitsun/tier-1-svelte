@@ -182,19 +182,28 @@
           style:width={`calc(${borderRadius.length + 'ch'} + var(--p) * 2)`}
           id="borderRadiusOut"
         />
-        <button class="btn" on:click={copy}>Copy</button>
+        <button class="btn" style="cursor: copy" on:click={copy}>Copy</button>
       </div>
     </div>
 
-    <div class="row">
-      <label class="label" for="fullControl">Full Control</label>
-      <input
-        bind:checked={fullControl}
-        class="switch"
-        id="fullControl"
-        type="checkbox"
-        on:change={checkBorder}
-      />
+    <div class="row" style="justify-content: space-between; width: 100%;">
+      <div class="row">
+        <label class="label" for="fullControl">Full Control</label>
+        <input
+          bind:checked={fullControl}
+          class="switch"
+          id="fullControl"
+          type="checkbox"
+          on:change={checkBorder}
+        />
+      </div>
+      <button
+        class="btn"
+        style="border-radius: 6px"
+        on:click={() =>
+          (border = fullControl ? parseString(BASE_BORDER2) : parseString(BASE_BORDER))}
+        >Reset</button
+      >
     </div>
     <!-- custom size here -->
   </div>
@@ -282,13 +291,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--p);
+    padding: var(--p, 6px);
     border-width: 0;
     line-height: 1;
     font-size: 1rem;
     text-align: inherit;
-    border-top-right-radius: var(--br);
-    border-bottom-right-radius: var(--br);
+    border-top-right-radius: var(--br, 6px);
+    border-bottom-right-radius: var(--br, 6px);
     background-color: #18e;
 
     transition-property: background-color;
@@ -296,7 +305,7 @@
     color: white;
     text-transform: uppercase;
     font-weight: 600;
-    cursor: copy;
+    cursor: pointer;
   }
 
   .switch {
