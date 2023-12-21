@@ -10,6 +10,7 @@
   let overlayWidth = 0;
   let overlayHeight = 0;
   let fullControl = false;
+  let copyStatus = '';
 
   onMount(() => {
     const { hash } = window.location;
@@ -52,8 +53,64 @@
 
   function copy() {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(formString(border));
+      try {
+        navigator.clipboard.writeText(formString(border));
+        copyStatus = 'Copied to clipboard';
+      } catch {
+        copyStatus = 'Failed copy to clipboard';
+      }
+    } else {
+      copyStatus = "Can't copy to clipboard";
     }
+  }
+
+  /**
+   * Simple version of tooltip
+   * @type {import('svelte/action').Action<HTMLDivElement, {text: string, duration: number}, {'on:hide': (e: CustomEvent) => void}>}
+   */
+  function tooltip(node, { text, duration }) {
+    /**
+     * @type {NodeJS.Timeout | undefined}
+     */
+    let timeout;
+
+    const hide = () => {
+      node.style.opacity = '0';
+      clearTimeout(timeout);
+    };
+    /**
+     * Show node
+     * @param {number} duration
+     */
+    const show = (duration) => {
+      node.style.opacity = '1';
+      timeout = setTimeout(() => {
+        hide();
+        node.dispatchEvent(new CustomEvent('hide'));
+      }, duration);
+    };
+
+    /**
+     * Toggles vision depend on text
+     * @param {string} text
+     * @param {number} duration
+     */
+    const toggle = (text, duration) => {
+      clearTimeout(timeout);
+      if (!text) hide();
+      else {
+        node.innerText = text;
+        show(duration);
+      }
+    };
+
+    toggle(text, duration);
+
+    return {
+      update: ({ text, duration }) => {
+        toggle(text, duration);
+      }
+    };
   }
 </script>
 
@@ -205,8 +262,13 @@
         >Reset</button
       >
     </div>
-    <!-- custom size here -->
   </div>
+
+  <div
+    class="copy-notify"
+    use:tooltip={{ text: copyStatus, duration: 2000 }}
+    on:hide={() => (copyStatus = '')}
+  />
 </main>
 
 <style>
@@ -216,6 +278,7 @@
   }
 
   main {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -346,5 +409,21 @@
 
   .btn:active {
     background-color: #18ec;
+  }
+
+  .copy-notify {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    background-color: #edede988;
+    border: 1px solid #00304955;
+    border-radius: 6px;
+    padding: 12px;
+    opacity: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1b263b;
   }
 </style>
