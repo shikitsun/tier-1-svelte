@@ -1,12 +1,28 @@
 <script>
   /**
-   * @type {number | null}
+   * @type {string | null}
    */
-  let value = null;
+  let value = '';
+  const pattern = '^(\\+|-)?([\\d]+(\\.[\\d]*)?){0,1}$';
+  const patternRegExp = new RegExp(pattern);
 </script>
 
 <main>
-  <input type="text" pattern="(\+|-)?[\d]*(\.[\d]*)?" bind:value />
+  <input
+    type="text"
+    {pattern}
+    on:input|preventDefault={(ev) => {
+      if (ev.target && ev.target instanceof HTMLInputElement) {
+        // if test failed (false)
+        if (!patternRegExp.test(ev.target.value)) {
+          // do not update value
+          ev.target.value = value || '';
+        }
+        value = ev.target.value;
+      }
+    }}
+    {value}
+  />
   <div class="pad" />
 </main>
 
