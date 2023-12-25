@@ -23,9 +23,9 @@
   /**
    * Factory for add-to-end
    * @param {number | string} suffix what add to end
-   * @returns {(value: number | string) => number}
+   * @returns {(value: number | string) => string}
    */
-  const createAddToEnd = (suffix) => (value) => +`${value || ''}${suffix}`;
+  const createAddToEnd = (suffix) => (value) => `${value || ''}${suffix}`;
   /**
    * Wraps function and after call `fn` write `key` to `lastUsed`
    * @param {string} key
@@ -115,7 +115,7 @@
      */
     '+': writeToLast(
       '+',
-      waitForLast(/** @type {OperationFn} */ (value, by = 0) => value + by)
+      waitForLast(/** @type {OperationFn} */ (value, by = 0) => +value + +by)
     ),
     /** reset last number & value */
     ac: function () {
@@ -181,7 +181,7 @@
         disabled={!valid && Number.isNaN(+key) && key !== '.'}
         on:click={() =>
           (value = fns[/** @type {keyof typeof fns} */ (key)](
-            /** @type {never} */ (+(value || '')),
+            /** @type {never} */ (value || ''),
             /** @type {never} */ (last)
           ))}>{key}</button
       >
@@ -274,16 +274,17 @@
     color: #e36414;
   }
 
-  .pad button:hover {
+  .pad button:hover:not(:disabled) {
     background-color: rgba(var(--bg), 0.65);
   }
 
-  .pad button:active {
+  .pad button:active:not(:disabled) {
     background-color: rgba(var(--bg), 1);
   }
 
   .pad button:disabled {
     opacity: 0.6;
+    cursor: not-allowed;
   }
 
   @media (max-width: 600px) {
