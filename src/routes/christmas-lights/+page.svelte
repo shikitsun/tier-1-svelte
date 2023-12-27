@@ -97,7 +97,12 @@
      * @param {AnimationEvent} ev
      */
     function handleAnimationStart(ev) {
-      if (ev.animationName.includes(animName)) {
+      if (
+        ev.animationName.includes(animName) &&
+        ev.target &&
+        ev.target instanceof HTMLElement &&
+        ev.target.dataset.color === node.dataset.color
+      ) {
         animation = findAnimation(node.getAnimations(), animName);
         sync(seek(idx, animName));
       }
@@ -133,6 +138,7 @@
         style:--color={getColorOf(idx)}
         style:--delay={getDelayOf(idx)}
         style:--duration={`${intensity}s`}
+        data-color={getColorOf(idx)}
         use:syncAnimation={{ idx }}
       />
     {/each}
