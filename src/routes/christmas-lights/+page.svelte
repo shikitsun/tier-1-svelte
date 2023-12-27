@@ -1,3 +1,7 @@
+<script context="module">
+  export const onlyNumber = /\d*/;
+</script>
+
 <script>
   // tl;dr many of these styles inspired by https://codepen.io/irfanezani_/pen/mdeLpKo, many thanks to author :)
   /**
@@ -14,12 +18,19 @@
   const elementWidth = ropePartLength + bulbWidth;
 
   let ropeWidth = 0;
+
+  // control values
   /**
    * saved colors by index
    * @type {{[key: string | number]: string}}
    */
   let colors = {};
   let isPlayed = true;
+  /**
+   * Intensity (animation interval) in seconds
+   */
+  let intensity = 1;
+
   const defaultColors = Object.freeze(['#e63946', '#ffb700', '#4cc9f0', '#2ba84a']);
   /**
    * How many elements
@@ -121,6 +132,7 @@
       <li
         style:--color={getColorOf(idx)}
         style:--delay={getDelayOf(idx)}
+        style:--duration={`${intensity}s`}
         use:syncAnimation={{ idx }}
       />
     {/each}
@@ -129,9 +141,28 @@
   <div class="controls">
     <h2 class="title">Christmas lights</h2>
 
-    <form class="form">
-      <input type="checkbox" bind:checked={isPlayed} />
-    </form>
+    <div class="form-container">
+      <form class="form">
+        <input type="checkbox" bind:checked={isPlayed} />
+        <div class="intensity">
+          <input
+            type="number"
+            value={intensity ?? 0}
+            on:input|preventDefault={(ev) => {
+              if (ev.target && ev.target instanceof HTMLInputElement) {
+                // if test failed (false)
+                if (!onlyNumber.test(ev.target.value)) {
+                  // do not update value
+                  ev.target.value = `${intensity || ''}`;
+                }
+                intensity = +ev.target.value;
+              }
+            }}
+          />
+          <span>s</span>
+        </div>
+      </form>
+    </div>
   </div>
 </main>
 
@@ -235,9 +266,16 @@
     text-shadow: 0px 0px 30px white;
   }
 
-  .controls .form {
+  .controls .form-container {
     display: flex;
     justify-content: center;
+  }
+
+  .controls .form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 1.5rem;
   }
 
   .controls .form [type='checkbox'] {
@@ -276,6 +314,37 @@
 
   .controls .form [type='checkbox']:checked::before {
     background-color: #5a189aaa;
+  }
+
+  .controls .form .intensity {
+    display: flex;
+  }
+
+  .controls .form .intensity input {
+    all: unset;
+    appearance: textField;
+    width: calc(5ch + 0.25rem * 2);
+    height: 1.25rem;
+    text-align: end;
+    font-size: 1rem;
+    background-color: #003049cc;
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border: 0.01rem solid #003049ff;
+  }
+
+  .controls .form .intensity span {
+    font-size: 1rem;
+    opacity: 0.6;
+    user-select: none;
+    padding: 0.25rem 0.5rem;
+    text-transform: lowercase;
+    background-color: #5a189aa2;
+    border-start-end-radius: 0.25rem;
+    border-end-end-radius: 0.25rem;
+    border: 0.01rem solid #5a189aff;
   }
 
   @keyframes glow {
