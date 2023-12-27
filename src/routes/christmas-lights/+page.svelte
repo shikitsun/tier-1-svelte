@@ -19,6 +19,10 @@
    */
   let colors = {};
   const defaultColors = Object.freeze(['#e63946', '#ffb700', '#4cc9f0', '#2ba84a']);
+  /**
+   * How many elements
+   */
+  const elementCount = defaultColors.length;
 
   $: bulbs = new Array(Math.round(ropeWidth / (elementWidth + bulbWidth * 1.25))).fill(null);
 
@@ -28,7 +32,7 @@
    */
   function getColorOf(idx) {
     if (colors[idx]) return colors[idx];
-    return defaultColors[idx % defaultColors.length];
+    return defaultColors[idx % elementCount];
   }
 
   /**
@@ -36,7 +40,66 @@
    * @param {number} idx index element
    */
   function getDelayOf(idx) {
-    return `${500 * (idx % Math.round(defaultColors.length / 2))}ms`;
+    return `${500 * (idx % Math.round(elementCount))}ms`;
+  }
+
+  /**
+   * Sync animation between same-based intervals
+   * @type {import("svelte/action").Action<HTMLLIElement, {idx: number, animName?: string}>}
+   */
+  function syncAnimation(node, { idx, animName = 'glow' }) {
+    /**
+     * @type {Animation | undefined} current animation
+     */
+    let animation;
+    /**
+     * Finds animation in `animations`
+     * @param {Animation[] | undefined} animations
+     * @param {string} name
+     */
+    const findAnimation = (animations, name) =>
+      (animations || []).find((anim) => /** @type {any} */ (anim)['animationName'].includes(name));
+    /**
+     * Search for animation container with same idx base
+     * @param {number} idx
+     * @param {string} name animation name
+     */
+    const seek = (idx, name) =>
+      findAnimation(node.parentElement?.children[idx % elementCount].getAnimations(), name);
+
+    /**
+     * Syncs `node` animation with animation
+     * @param {Animation | undefined} anim external animation to sync with
+     */
+    const sync = (anim) => {
+      if (!animation || !anim) return;
+      animation.startTime = anim.startTime;
+    };
+
+    /**
+     * @param {AnimationEvent} ev
+     */
+    function handleAnimationStart(ev) {
+      if (ev.animationName.includes(animName)) {
+        animation = findAnimation(node.getAnimations(), animName);
+        sync(seek(idx, animName));
+      }
+    }
+
+    // can also handle cancel, but it's enough
+    node.addEventListener('animationstart', handleAnimationStart);
+
+    sync(seek(idx, animName));
+
+    return {
+      update: ({ idx, animName = 'glow' }) => {
+        sync(seek(idx, animName));
+      },
+      destroy: () => {
+        // unbind event listener
+        node.removeEventListener('animationstart', handleAnimationStart);
+      }
+    };
   }
 </script>
 
@@ -48,7 +111,11 @@
     style:--bulbWidth={bulbWidth + 'px'}
   >
     {#each bulbs as _, idx}
-      <li style:--color={getColorOf(idx)} style:--delay={getDelayOf(idx)} />
+      <li
+        style:--color={getColorOf(idx)}
+        style:--delay={getDelayOf(idx)}
+        use:syncAnimation={{ idx }}
+      />
     {/each}
   </ul>
 </main>
@@ -63,7 +130,7 @@
     min-width: 100vw;
     min-height: 100vh;
     padding: 0;
-    --rope-color: #222;
+    --rope-color: #333d;
   }
 
   main {
