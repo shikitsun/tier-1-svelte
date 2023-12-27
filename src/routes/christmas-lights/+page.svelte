@@ -1,4 +1,5 @@
 <script>
+  // tl;dr many of these styles inspired by https://codepen.io/irfanezani_/pen/mdeLpKo, many thanks to author :)
   /**
    * In px for precise
    */
@@ -18,11 +19,12 @@
    * @type {{[key: string | number]: string}}
    */
   let colors = {};
+  let isPlayed = true;
   const defaultColors = Object.freeze(['#e63946', '#ffb700', '#4cc9f0', '#2ba84a']);
   /**
    * How many elements
    */
-  const elementCount = defaultColors.length;
+  $: elementCount = defaultColors.length + Object.keys(colors).length;
 
   $: bulbs = new Array(Math.round(ropeWidth / (elementWidth + bulbWidth * 1.25))).fill(null);
 
@@ -58,7 +60,11 @@
      * @param {string} name
      */
     const findAnimation = (animations, name) =>
-      (animations || []).find((anim) => /** @type {any} */ (anim)['animationName'].includes(name));
+      (animations || []).find(
+        (anim) =>
+          /** @type {any} */ (anim)['animationName'] &&
+          /** @type {any} */ (anim)['animationName'].includes(name)
+      );
     /**
      * Search for animation container with same idx base
      * @param {number} idx
@@ -109,6 +115,7 @@
     bind:clientWidth={ropeWidth}
     style:--ropePartLength={ropePartLength + 'px'}
     style:--bulbWidth={bulbWidth + 'px'}
+    class:off={!isPlayed}
   >
     {#each bulbs as _, idx}
       <li
@@ -118,6 +125,14 @@
       />
     {/each}
   </ul>
+
+  <div class="controls">
+    <h2 class="title">Christmas lights</h2>
+
+    <form class="form">
+      <input type="checkbox" bind:checked={isPlayed} />
+    </form>
+  </div>
 </main>
 
 <style>
@@ -136,6 +151,8 @@
   main {
     width: 100vw;
     height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
   }
 
   .lightrope {
@@ -150,6 +167,9 @@
   .lightrope > * {
     all: unset;
     --glow-color: var(--color, #2ba84a);
+    --top-size: calc(var(--bw) / 4);
+    --top-radius: 2px;
+    --base-delay: 500ms;
     position: relative;
     width: var(--bw);
     height: var(--bw);
@@ -157,12 +177,14 @@
     top: calc(var(--bw) / 2);
     background-color: var(--rope-color);
     margin-right: calc((var(--bw) + var(--ropePartLength, 16px)) * 0.6666666666666666);
-    background-color: var(--color, #2ba84a);
+    background-color: #003049;
+    transition: background-color var(--base-delay) linear;
   }
 
   .lightrope:not(.off) > * {
+    background-color: var(--color, #2ba84a);
     animation: glow var(--duration, 1s) infinite;
-    animation-delay: var(--delay, 0s);
+    animation-delay: calc(var(--delay, 0s) + var(--base-delay));
   }
 
   .lightrope > *:last-child {
@@ -174,16 +196,16 @@
   }
 
   .lightrope > ::before {
-    --size: calc(var(--bw) / 4);
     content: '';
     position: absolute;
-    height: var(--size);
-    width: var(--size);
-    border-radius: 2px;
+    height: var(--top-size);
+    width: var(--top-size);
+    border-radius: var(--top-radius);
     display: inline-block;
     background-color: var(--rope-color);
-    left: calc(var(--size) * 1.5);
-    top: calc(var(--size) * -1);
+    left: calc(var(--top-size) * 1.5);
+    top: calc(var(--top-size) * -1 + var(--top-radius));
+    z-index: -1;
   }
 
   .lightrope > ::after {
@@ -197,6 +219,63 @@
     border-bottom: calc(var(--bw) / 10) solid var(--rope-color);
     border-radius: 50%;
     z-index: -1;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    width: 100%;
+  }
+
+  .controls .title {
+    color: white;
+    font-size: min(11vw, max(2rem, 2vw));
+    text-align: center;
+    text-shadow: 0px 0px 30px white;
+  }
+
+  .controls .form {
+    display: flex;
+    justify-content: center;
+  }
+
+  .controls .form [type='checkbox'] {
+    all: unset;
+    position: relative;
+    --width: 4rem;
+    --height: 2rem;
+    /* off by default */
+    --state: 0;
+    width: var(--width);
+    height: var(--height);
+    cursor: pointer;
+  }
+
+  .controls .form [type='checkbox']:checked {
+    --state: 1;
+  }
+
+  .controls .form [type='checkbox'],
+  .controls .form [type='checkbox']::before {
+    background-color: #5a189a3a;
+    border-radius: 0.25rem;
+    border: 0.025rem solid #5a189aaa;
+  }
+
+  .controls .form [type='checkbox']::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    top: -1.05%;
+    transform: scale(0.8) translateX(calc(var(--width) / 2 * var(--state) / 0.82));
+    width: calc(var(--width) / 2);
+    height: var(--height);
+    transition: transform 150ms linear, background-color 150ms linear;
+  }
+
+  .controls .form [type='checkbox']:checked::before {
+    background-color: #5a189aaa;
   }
 
   @keyframes glow {
