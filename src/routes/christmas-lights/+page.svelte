@@ -1,5 +1,6 @@
 <script context="module">
   export const onlyNumber = /\d*/;
+  export const TOP = Symbol('top');
 </script>
 
 <script>
@@ -17,14 +18,32 @@
    */
   const elementWidth = ropePartLength + bulbWidth;
 
+  /**
+   * @typedef Bulb
+   * @property {string} id identity of bulb (uuid4)
+   * @property {number} size size of bulb (width x height in one value)
+   * @property {string} color color of bulb (hex, rgb or rgba)
+   */
+
+  /**
+   * @typedef {Row<Bulb>} BulbRow
+   */
+
+  /**
+   * @typedef {Array<T> & {[TOP]: number}} Row
+   * @template T
+   */
+
   let ropeWidth = 0;
 
-  // control values
   /**
-   * saved colors by index
-   * @type {{[key: string | number]: string}}
+   * @type {BulbRow[]}
    */
-  let colors = {};
+  let allBulbs = [];
+
+  let displayedRows = 7;
+
+  // control values
   let isPlayed = true;
   /**
    * Intensity (animation interval) in seconds
@@ -35,18 +54,72 @@
   /**
    * How many elements
    */
-  $: elementCount = defaultColors.length + Object.keys(colors).length;
-
-  $: bulbs = new Array(Math.round(ropeWidth / (elementWidth + bulbWidth * 1.25))).fill(null);
+  $: elementCount = defaultColors.length;
 
   /**
-   * Get color for index `idx` or default
-   * @param {number} idx index of element
+   * Creates element
+   * @param {string[]} usedColors used colors to exclude from pick
+   * @returns {Bulb}
    */
-  function getColorOf(idx) {
-    if (colors[idx]) return colors[idx];
-    return defaultColors[idx % elementCount];
+  const createElement = (usedColors) => {
+    const colors = defaultColors.filter((color) => !usedColors.includes(color));
+    return {
+      color: colors[Math.round(Math.random() * colors.length - 1)],
+      size: bulbWidth,
+      id: crypto.randomUUID()
+    };
+  };
+
+  /**
+   * Gets bulbs from `all` according to `rows` & `width`
+   * @param {BulbRow[]} all bulbs to take from
+   * @param {number} rows how many bulbs rows take from `all`
+   * @param {number} width how many bulbs in default size can contain retrieved width
+   * @returns {BulbRow[]} bulbs to display
+   */
+  function getBulbsFrom(all, rows, width) {
+    let topOffset = 0;
+    /**
+     * Bulbs rows
+     * @type {BulbRow[]}
+     */
+    let result = [];
+    for (let r = 0; r < rows; r++) {
+      let heightMax = 0;
+      const row =
+        all[r] ||
+        new Array(Math.round(width / (elementWidth + bulbWidth)))
+          .fill(null)
+          .map(() => createElement([]));
+      if (!all[r]) {
+        all[r] = row;
+      }
+      let rowWidth = 0;
+      let i = 0;
+      /**
+       * @type {typeof row}
+       */
+      const newRow = /** @type {typeof row} */ (/** @type {unknown} */ ([]));
+      while (width > rowWidth) {
+        const element =
+          row[i] ||
+          createElement([all[r - 1] ? all[r - 1][i]?.color || '' : '', all[r][i - 1]?.color || '']);
+        if (!row[i]) {
+          all[r][i] = element;
+        }
+        newRow.push(element);
+        rowWidth += element.size;
+        heightMax = Math.max(element.size + element.size / 4 - 1);
+        i++;
+      }
+      newRow[TOP] = topOffset;
+      topOffset += heightMax;
+      result.push(newRow);
+    }
+    return result;
   }
+
+  $: bulbs = getBulbsFrom(allBulbs, displayedRows, ropeWidth - (ropeWidth / 100) * 60);
 
   /**
    * Get delay in `ms` for `idx`
@@ -58,9 +131,9 @@
 
   /**
    * Sync animation between same-based intervals
-   * @type {import("svelte/action").Action<HTMLLIElement, {idx: number, animName?: string}>}
+   * @type {import("svelte/action").Action<HTMLLIElement, {animName?: string}>}
    */
-  function syncAnimation(node, { idx, animName = 'glow' }) {
+  function syncAnimation(node, { animName = 'glow' }) {
     /**
      * @type {Animation | undefined} current animation
      */
@@ -78,11 +151,13 @@
       );
     /**
      * Search for animation container with same idx base
-     * @param {number} idx
      * @param {string} name animation name
      */
-    const seek = (idx, name) =>
-      findAnimation(node.parentElement?.children[idx % elementCount].getAnimations(), name);
+    const seek = (name) =>
+      findAnimation(
+        node.parentElement?.querySelector(`[data-color^="${node.dataset.color}"]`)?.getAnimations(),
+        name
+      );
 
     /**
      * Syncs `node` animation with animation
@@ -104,18 +179,18 @@
         ev.target.dataset.color === node.dataset.color
       ) {
         animation = findAnimation(node.getAnimations(), animName);
-        sync(seek(idx, animName));
+        sync(seek(animName));
       }
     }
 
     // can also handle cancel, but it's enough
     node.addEventListener('animationstart', handleAnimationStart);
 
-    sync(seek(idx, animName));
+    sync(seek(animName));
 
     return {
-      update: ({ idx, animName = 'glow' }) => {
-        sync(seek(idx, animName));
+      update: ({ animName = 'glow' }) => {
+        sync(seek(animName));
       },
       destroy: () => {
         // unbind event listener
@@ -123,26 +198,39 @@
       }
     };
   }
+
+  /**
+   * Updates certain bulb
+   * @param {number} row where update
+   * @param {number} idx which update
+   * @param {Partial<Bulb>} data what update
+   */
+  function updateBulb(row, idx, data) {
+    allBulbs = [...allBulbs];
+    allBulbs[row].splice(idx, 1, { ...allBulbs[row][idx], ...data });
+  }
 </script>
 
-<main>
-  <ul
-    class="lightrope"
-    bind:clientWidth={ropeWidth}
-    style:--ropePartLength={ropePartLength + 'px'}
-    style:--bulbWidth={bulbWidth + 'px'}
-    class:off={!isPlayed}
-  >
-    {#each bulbs as _, idx}
-      <li
-        style:--color={getColorOf(idx)}
-        style:--delay={getDelayOf(idx)}
-        style:--duration={`${intensity}s`}
-        data-color={getColorOf(idx)}
-        use:syncAnimation={{ idx }}
-      />
-    {/each}
-  </ul>
+<main bind:clientWidth={ropeWidth}>
+  {#each bulbs as rows, idx}
+    <ul
+      class="lightrope"
+      style:--offset={rows[TOP] + 'px'}
+      style:--ropePartLength={ropePartLength + 'px'}
+      class:off={!isPlayed}
+    >
+      {#each rows as bulb, ridx (bulb.id)}
+        <li
+          style:--color={bulb.color}
+          style:--bw={bulb.size + 'px'}
+          style:--delay={getDelayOf(ridx)}
+          style:--duration={`${intensity}s`}
+          data-color={bulb.color}
+          use:syncAnimation={{}}
+        />
+      {/each}
+    </ul>
+  {/each}
 
   <div class="controls">
     <h2 class="title">Christmas lights</h2>
@@ -190,15 +278,16 @@
     height: 100vh;
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
   }
 
   .lightrope {
-    --bw: var(--bulbWidth, 12px);
     all: unset;
+    position: fixed;
     width: 100vw;
     display: flex;
-    position: relative;
     justify-content: center;
+    top: var(--offset, 0);
   }
 
   .lightrope > * {
@@ -211,11 +300,13 @@
     width: var(--bw);
     height: var(--bw);
     border-radius: 50%;
-    top: calc(var(--bw) / 2);
+    top: calc(var(--bw) / 5);
+    min-width: var(--bw);
     background-color: var(--rope-color);
     margin-right: calc((var(--bw) + var(--ropePartLength, 16px)) * 0.6666666666666666);
     background-color: #003049;
     transition: background-color var(--base-delay) linear;
+    z-index: 1;
   }
 
   .lightrope:not(.off) > * {
@@ -259,10 +350,12 @@
   }
 
   .controls {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-content: center;
     width: 100%;
+    z-index: 1;
   }
 
   .controls .title {
