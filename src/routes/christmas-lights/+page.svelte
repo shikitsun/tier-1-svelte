@@ -64,7 +64,7 @@
   const createElement = (usedColors) => {
     const colors = defaultColors.filter((color) => !usedColors.includes(color));
     return {
-      color: colors[Math.round(Math.random() * colors.length - 1)],
+      color: colors[Math.max(Math.round(Math.random() * colors.length - 1), 0)],
       size: bulbWidth,
       id: crypto.randomUUID()
     };
@@ -122,11 +122,12 @@
   $: bulbs = getBulbsFrom(allBulbs, displayedRows, ropeWidth - (ropeWidth / 100) * 60);
 
   /**
-   * Get delay in `ms` for `idx`
-   * @param {number} idx index element
+   * Get delay in `ms` for `bulb`
+   * @param {Bulb} bulb bulb element
+   * @param {number} idx fallback index
    */
-  function getDelayOf(idx) {
-    return `${500 * (idx % Math.round(elementCount))}ms`;
+  function getDelayOf(bulb, idx) {
+    return `${500 * (defaultColors.indexOf(bulb.color) + 1 || idx % Math.round(elementCount))}ms`;
   }
 
   /**
@@ -223,7 +224,7 @@
         <li
           style:--color={bulb.color}
           style:--bw={bulb.size + 'px'}
-          style:--delay={getDelayOf(ridx)}
+          style:--delay={getDelayOf(bulb, ridx)}
           style:--duration={`${intensity}s`}
           data-color={bulb.color}
           use:syncAnimation={{}}
@@ -306,7 +307,6 @@
     margin-right: calc((var(--bw) + var(--ropePartLength, 16px)) * 0.6666666666666666);
     background-color: #003049;
     transition: background-color var(--base-delay) linear;
-    z-index: 1;
   }
 
   .lightrope:not(.off) > * {
