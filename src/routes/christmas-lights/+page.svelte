@@ -4,6 +4,8 @@
 </script>
 
 <script>
+  import { clickOutside } from '$lib/actions/clickOutside';
+
   // tl;dr many of these styles inspired by https://codepen.io/irfanezani_/pen/mdeLpKo, many thanks to author :)
   /**
    * In px for precise
@@ -49,6 +51,19 @@
    * Intensity (animation interval) in seconds
    */
   let intensity = 1;
+  /**
+   * @type {Bulb & {ridx: number, idx: number} | null}
+   */
+  let selected = null;
+
+  /**
+   * @type {HTMLDialogElement | null}
+   */
+  let dialogRef = null;
+
+  $: if (selected && dialogRef) {
+    dialogRef.show();
+  }
 
   const defaultColors = Object.freeze(['#e63946', '#ffb700', '#4cc9f0', '#2ba84a']);
   /**
@@ -227,7 +242,10 @@
           style:--delay={getDelayOf(bulb, ridx)}
           style:--duration={`${intensity}s`}
           data-color={bulb.color}
+          data-id={bulb.id}
           use:syncAnimation={{}}
+          on:click={() => (selected = { ...bulb, ridx, idx })}
+          role={'button'}
         />
       {/each}
     </ul>
@@ -259,6 +277,48 @@
       </form>
     </div>
   </div>
+
+  <dialog
+    class="bulb-dialog"
+    use:clickOutside
+    on:clickOutside={(/** @type {CustomEvent<HTMLDialogElement>} */ ev) => {
+      ev.detail.close();
+      selected = null;
+      console.log('Click outside');
+    }}
+    bind:this={dialogRef}
+    style:--color={selected?.color}
+  >
+    {#if selected}
+      <form method="dialog">
+        <input
+          value={selected.color}
+          type="color"
+          on:change={(ev) =>
+            updateBulb(
+              /** @type {NonNullable<typeof selected>} */ (selected).idx,
+              /** @type {NonNullable<typeof selected>} */ (selected).ridx,
+              {
+                color: /** @type {HTMLInputElement} */ (ev.target).value
+              }
+            )}
+        />
+        <input
+          value={selected.size}
+          placeholder="36"
+          type="number"
+          on:change={(ev) =>
+            updateBulb(
+              /** @type {NonNullable<typeof selected>} */ (selected).idx,
+              /** @type {NonNullable<typeof selected>} */ (selected).ridx,
+              {
+                size: +(/** @type {HTMLInputElement} */ (ev.target).value)
+              }
+            )}
+        />
+      </form>
+    {/if}
+  </dialog>
 </main>
 
 <style>
@@ -349,6 +409,45 @@
     z-index: -1;
   }
 
+  .lightrope > ::before,
+  .lightrope > ::after {
+    pointer-events: none;
+  }
+
+  .bulb-dialog {
+    all: unset;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    background-color: #333333fc;
+    visibility: hidden;
+    opacity: 0;
+    width: fit-content;
+    height: fit-content;
+    pointer-events: none;
+    border: 2px solid var(--color);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    z-index: 3;
+  }
+
+  .bulb-dialog[open] {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .bulb-dialog form {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5rem;
+  }
+
+  .bulb-dialog form input {
+    width: 100%;
+  }
+
   .controls {
     position: relative;
     display: flex;
@@ -356,6 +455,7 @@
     align-content: center;
     width: 100%;
     z-index: 1;
+    pointer-events: none;
   }
 
   .controls .title {
@@ -363,6 +463,7 @@
     font-size: min(11vw, max(2rem, 2vw));
     text-align: center;
     text-shadow: 0px 0px 30px white;
+    user-select: none;
   }
 
   .controls .form-container {
@@ -387,6 +488,7 @@
     width: var(--width);
     height: var(--height);
     cursor: pointer;
+    pointer-events: all;
   }
 
   .controls .form [type='checkbox']:checked {
@@ -421,6 +523,7 @@
 
   .controls .form .intensity input {
     all: unset;
+    pointer-events: all;
     appearance: textField;
     width: calc(5ch + 0.25rem * 2);
     height: 1.25rem;
