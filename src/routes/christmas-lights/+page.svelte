@@ -5,6 +5,7 @@
 
 <script>
   import { clickOutside } from '$lib/actions/clickOutside';
+  import { computePosition, flip, shift, autoUpdate, offset } from '@floating-ui/dom';
 
   // tl;dr many of these styles inspired by https://codepen.io/irfanezani_/pen/mdeLpKo, many thanks to author :)
   /**
@@ -51,8 +52,12 @@
    * Intensity (animation interval) in seconds
    */
   let intensity = 1;
+
   /**
-   * @type {Bulb & {ridx: number, idx: number} | null}
+   * @typedef {Bulb & {ridx: number, idx: number}} BulbSel
+   */
+  /**
+   * @type {BulbSel | null}
    */
   let selected = null;
 
@@ -225,6 +230,48 @@
     allBulbs = [...allBulbs];
     allBulbs[row].splice(idx, 1, { ...allBulbs[row][idx], ...data });
   }
+
+  /**
+   * @type {import('svelte/action').Action<Element, {floatingRef: HTMLElement | null, isSelected: boolean}>}
+   */
+  function calcPositionFor(node, { floatingRef, isSelected }) {
+    /**
+     * @type {ReturnType<typeof autoUpdate> | null}
+     */
+    let cleanup = null;
+
+    /**
+     * Tries set position of float
+     * @param {typeof floatingRef} floatingRef reference to floating element
+     * @param {typeof isSelected} isSelected
+     */
+    function tryFloat(floatingRef, isSelected) {
+      // if has any cleanup awailable, do it
+      if (cleanup) cleanup();
+      // if is not selected, nullify value of cleanup and stop exec next
+      if (!isSelected || !floatingRef) {
+        cleanup = null;
+        return;
+      }
+      // updatePosition does not refer to this, so, null can be passed
+      cleanup = autoUpdate(node, floatingRef, () =>
+        computePosition(node, floatingRef, {
+          placement: 'right',
+          middleware: [flip(), shift(), offset(10)]
+        }).then(({ x, y }) => {
+          Object.assign(floatingRef.style, {
+            left: `${x}px`,
+            top: `${y}px`
+          });
+        })
+      );
+    }
+
+    return {
+      update: ({ floatingRef, isSelected }) => tryFloat(floatingRef, isSelected),
+      destroy: () => cleanup && cleanup()
+    };
+  }
 </script>
 
 <main bind:clientWidth={ropeWidth}>
@@ -244,6 +291,10 @@
           data-color={bulb.color}
           data-id={bulb.id}
           use:syncAnimation={{}}
+          use:calcPositionFor={{
+            floatingRef: dialogRef,
+            isSelected: !!(selected && selected.id === bulb.id)
+          }}
           on:click={() => (selected = { ...bulb, ridx, idx })}
           role={'button'}
         />
@@ -284,7 +335,6 @@
     on:clickOutside={(/** @type {CustomEvent<HTMLDialogElement>} */ ev) => {
       ev.detail.close();
       selected = null;
-      console.log('Click outside');
     }}
     bind:this={dialogRef}
     style:--color={selected?.color}
@@ -367,6 +417,7 @@
     margin-right: calc((var(--bw) + var(--ropePartLength, 16px)) * 0.6666666666666666);
     background-color: #003049;
     transition: background-color var(--base-delay) linear;
+    cursor: pointer;
   }
 
   .lightrope:not(.off) > * {
@@ -417,8 +468,6 @@
   .bulb-dialog {
     all: unset;
     position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
     background-color: #333333fc;
     visibility: hidden;
@@ -430,6 +479,8 @@
     border-radius: 0.5rem;
     padding: 0.5rem;
     z-index: 3;
+    transition-property: left top;
+    transition-duration: 150ms;
   }
 
   .bulb-dialog[open] {
