@@ -129,7 +129,7 @@
         }
         newRow.push(element);
         rowWidth += element.size;
-        heightMax = Math.max(element.size + element.size / 4 - 1);
+        heightMax = Math.max(element.size + element.size / 4 - 1, heightMax);
         i++;
       }
       newRow[TOP] = topOffset;
@@ -572,7 +572,8 @@
     display: flex;
   }
 
-  .controls .form .intensity input {
+  .controls .form .intensity input,
+  .bulb-dialog form input[type='number'] {
     all: unset;
     pointer-events: all;
     appearance: textField;
