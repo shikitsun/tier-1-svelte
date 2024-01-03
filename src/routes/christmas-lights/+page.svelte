@@ -273,6 +273,22 @@
       destroy: () => cleanup && cleanup()
     };
   }
+
+  /**
+   * @param {Event & { currentTarget: EventTarget & HTMLInputElement; }} ev
+   * @param {number} prev previous valid value
+   * @param {(value: number) => void} set fn to set new value
+   */
+  function onlyNumberInput(ev, prev, set) {
+    if (ev.target && ev.target instanceof HTMLInputElement) {
+      // if test failed (false)
+      if (!onlyNumber.test(ev.target.value)) {
+        // do not update value
+        ev.target.value = `${prev || ''}`;
+      }
+      set(+ev.target.value);
+    }
+  }
 </script>
 
 <main bind:clientWidth={ropeWidth}>
@@ -314,16 +330,7 @@
           <input
             type="number"
             value={intensity ?? 0}
-            on:input|preventDefault={(ev) => {
-              if (ev.target && ev.target instanceof HTMLInputElement) {
-                // if test failed (false)
-                if (!onlyNumber.test(ev.target.value)) {
-                  // do not update value
-                  ev.target.value = `${intensity || ''}`;
-                }
-                intensity = +ev.target.value;
-              }
-            }}
+            on:input|preventDefault={(ev) => onlyNumberInput(ev, intensity, (v) => (intensity = v))}
           />
           <span>s</span>
         </div>
@@ -333,16 +340,8 @@
             type="number"
             bind:value={displayedRows}
             min="1"
-            on:input|preventDefault={(ev) => {
-              if (ev.target && ev.target instanceof HTMLInputElement) {
-                // if test failed (false)
-                if (!onlyNumber.test(ev.target.value)) {
-                  // do not update value
-                  ev.target.value = `${displayedRows || ''}`;
-                }
-                displayedRows = +ev.target.value || 1;
-              }
-            }}
+            on:input|preventDefault={(ev) =>
+              onlyNumberInput(ev, displayedRows, (value) => (displayedRows = Math.max(value, 1)))}
           />
         </div>
       </form>
@@ -381,12 +380,23 @@
           placeholder="36"
           type="number"
           min={16}
-          on:change={(ev) =>
-            updateBulb(
-              /** @type {NonNullable<typeof selected>} */ (selected).idx,
-              /** @type {NonNullable<typeof selected>} */ (selected).ridx,
-              {
-                size: +(/** @type {HTMLInputElement} */ (ev.target).value)
+          on:input|preventDefault={(ev) =>
+            onlyNumberInput(
+              ev,
+              /** @type {NonNullable<typeof selected>} */ (selected).size,
+              (value) => {
+                /** @type {NonNullable<typeof selected>} */ (selected).size = Math.max(value, 16);
+                updateBulb(
+                  /** @type {NonNullable<typeof selected>} */ (selected).idx,
+                  /** @type {NonNullable<typeof selected>} */ (selected).ridx,
+                  {
+                    size: +(
+                      /** @type {HTMLInputElement} */ /** @type {NonNullable<typeof selected>} */ (
+                        selected
+                      ).size
+                    )
+                  }
+                );
               }
             )}
         />
