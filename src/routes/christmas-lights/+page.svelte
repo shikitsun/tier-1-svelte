@@ -315,7 +315,17 @@
           }}
           on:click={() => (selected = { ...bulb, ridx, idx })}
           role={'button'}
-        />
+        >
+          {#if rows[ridx + 1]}
+            {@const next = rows[ridx + 1]}
+            {@const rel = ((next.size - bulb.size) / -(next.size - bulb.size || 1)) * -1}
+            {@const x = next.size + bulb.size * 0.83}
+            {@const y = ((next.size - bulb.size) / 1.5) * rel}
+            <svg>
+              <path d={`m 0 ${bulb.size / 2} l ${x} ${y || 1}`} fill="#333d" stroke="#333d" />
+            </svg>
+          {/if}
+        </li>
       {/each}
     </ul>
   {/each}
@@ -481,7 +491,7 @@
     z-index: -1;
   }
 
-  .lightrope > ::after {
+  /* .lightrope > ::after {
     content: '';
     display: inline-block;
     position: absolute;
@@ -492,6 +502,16 @@
     border-bottom: calc(var(--bw) / 10) solid var(--rope-color);
     border-radius: 50%;
     z-index: -1;
+  } */
+
+  .lightrope > * svg {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    top: calc(var(--bw) / 5 * -1);
+    left: calc(var(--bw) - var(--bw) / 5);
+    pointer-events: none;
   }
 
   .lightrope > ::before,
@@ -564,7 +584,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    column-gap: 1.5rem;
+    gap: 1.5rem;
   }
 
   .controls .form [type='checkbox'] {
@@ -618,7 +638,6 @@
     pointer-events: all;
     appearance: textField;
     width: calc(5ch + 0.25rem * 2);
-    height: 1.25rem;
     text-align: end;
     font-size: 1rem;
     background-color: #003049cc;
@@ -646,6 +665,7 @@
     text-transform: lowercase;
     background-color: #5a189aa2;
     border: 0.01rem solid #5a189aff;
+    line-height: 1;
   }
 
   .controls .form .intensity span {
@@ -665,6 +685,12 @@
     }
     50% {
       box-shadow: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .controls .form {
+      flex-direction: column;
     }
   }
 </style>
