@@ -6,6 +6,7 @@
 <script>
   import { clickOutside } from '$lib/actions/clickOutside';
   import { computePosition, flip, shift, autoUpdate, offset } from '@floating-ui/dom';
+  import { fade } from 'svelte/transition';
 
   // tl;dr many of these styles inspired by https://codepen.io/irfanezani_/pen/mdeLpKo, many thanks to author :)
   /**
@@ -44,7 +45,7 @@
    */
   let allBulbs = [];
 
-  let displayedRows = 7;
+  let displayedRows = 1;
 
   // control values
   let isPlayed = true;
@@ -281,6 +282,7 @@
       style:--offset={rows[TOP] + 'px'}
       style:--ropePartLength={ropePartLength + 'px'}
       class:off={!isPlayed}
+      transition:fade
     >
       {#each rows as bulb, ridx (bulb.id)}
         <li
@@ -325,6 +327,24 @@
           />
           <span>s</span>
         </div>
+        <div class="rows">
+          <span>rows</span>
+          <input
+            type="number"
+            bind:value={displayedRows}
+            min="1"
+            on:input|preventDefault={(ev) => {
+              if (ev.target && ev.target instanceof HTMLInputElement) {
+                // if test failed (false)
+                if (!onlyNumber.test(ev.target.value)) {
+                  // do not update value
+                  ev.target.value = `${displayedRows || ''}`;
+                }
+                displayedRows = +ev.target.value || 1;
+              }
+            }}
+          />
+        </div>
       </form>
     </div>
   </div>
@@ -344,19 +364,23 @@
         <input
           value={selected.color}
           type="color"
-          on:change={(ev) =>
+          on:change={(ev) => {
             updateBulb(
               /** @type {NonNullable<typeof selected>} */ (selected).idx,
               /** @type {NonNullable<typeof selected>} */ (selected).ridx,
               {
                 color: /** @type {HTMLInputElement} */ (ev.target).value
               }
-            )}
+            );
+            /**  @type {NonNullable<typeof selected>} */ (selected).color =
+              /** @type {HTMLInputElement} */ (ev.target).value;
+          }}
         />
         <input
           value={selected.size}
           placeholder="36"
           type="number"
+          min={16}
           on:change={(ev) =>
             updateBulb(
               /** @type {NonNullable<typeof selected>} */ (selected).idx,
@@ -499,6 +523,10 @@
     width: 100%;
   }
 
+  .bulb-dialog form input[type='number'] {
+    border-radius: 0.25rem !important;
+  }
+
   .controls {
     position: relative;
     display: flex;
@@ -568,12 +596,14 @@
     background-color: #5a189aaa;
   }
 
-  .controls .form .intensity {
+  .controls .form .intensity,
+  .controls .form .rows {
     display: flex;
   }
 
   .controls .form .intensity input,
-  .bulb-dialog form input[type='number'] {
+  .bulb-dialog form input[type='number'],
+  .controls .form input[type='number'] {
     all: unset;
     pointer-events: all;
     appearance: textField;
@@ -584,21 +614,38 @@
     background-color: #003049cc;
     border-radius: 0.25rem;
     padding: 0.25rem;
-    border-start-end-radius: 0;
-    border-end-end-radius: 0;
     border: 0.01rem solid #003049ff;
   }
 
-  .controls .form .intensity span {
+  .controls .form .intensity input {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  .controls .form .rows input {
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
+
+  .controls .form .intensity span,
+  .controls .form .rows span {
     font-size: 1rem;
     opacity: 0.6;
     user-select: none;
     padding: 0.25rem 0.5rem;
     text-transform: lowercase;
     background-color: #5a189aa2;
+    border: 0.01rem solid #5a189aff;
+  }
+
+  .controls .form .intensity span {
     border-start-end-radius: 0.25rem;
     border-end-end-radius: 0.25rem;
-    border: 0.01rem solid #5a189aff;
+  }
+
+  .controls .form .rows span {
+    border-start-start-radius: 0.25rem;
+    border-end-start-radius: 0.25rem;
   }
 
   @keyframes glow {
