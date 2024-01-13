@@ -319,10 +319,15 @@
           {#if rows[ridx + 1]}
             {@const next = rows[ridx + 1]}
             {@const rel = ((next.size - bulb.size) / -(next.size - bulb.size || 1)) * -1}
-            {@const x = next.size + bulb.size * 0.83}
-            {@const y = ((next.size - bulb.size) / 1.5) * rel}
+            {@const x = next.size + bulb.size * 0.85}
+            {@const y = ((next.size - bulb.size) / 1.9) * rel}
             <svg>
-              <path d={`m 0 ${bulb.size / 2} l ${x} ${y || 1}`} fill="#333d" stroke="#333d" />
+              <path
+                d={`m 0 ${bulb.size / 2} t -5 -5 5 5 ${x} ${y || 1}`}
+                fill="transparent"
+                stroke="#333d"
+                stroke-width="3"
+              />
             </svg>
           {/if}
         </li>
