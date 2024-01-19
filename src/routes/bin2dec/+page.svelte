@@ -77,6 +77,9 @@
   :root {
     --invalid-color: rgb(160, 50, 50);
     --primary-color: rgb(49, 120, 226);
+    --bg: #2b2d42;
+    --color: #dad7cd;
+    color: var(--color);
   }
 
   .app,
@@ -87,7 +90,7 @@
   }
 
   .container {
-    background-color: aliceblue;
+    background-color: var(--bg);
     padding: clamp(0.4rem, 2vw, 1rem);
     border-radius: 10px;
     flex-direction: column;
@@ -99,7 +102,6 @@
     font-size: clamp(2rem, 3.5vmax, 3.5rem);
     line-height: 1.5;
     font-weight: 500;
-    color: rgb(20, 20, 20);
   }
 
   .inputs {
@@ -126,7 +128,8 @@
     border: 0.09em solid var(--primary-color);
     outline: none;
     border-radius: 0.2em;
-    color: rgb(50, 50, 50);
+    color: var(--color);
+    background-color: #2b2d42;
   }
 
   input:focus-visible {
