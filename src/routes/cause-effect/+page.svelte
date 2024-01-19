@@ -31,7 +31,7 @@
     {#each people as person}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-      <li on:click={() => (selected = person)}>
+      <li on:click={() => (selected = person)} class:active={selected?.name === person.name}>
         {person.name}
       </li>
     {/each}
@@ -131,7 +131,7 @@
     background-color: #0004;
     border-radius: 0.25rem;
     cursor: pointer;
-    transition: opacity 150ms;
+    transition: opacity 150ms, box-shadow 150ms;
   }
 
   .people li:hover {
