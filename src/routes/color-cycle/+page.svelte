@@ -21,7 +21,10 @@
    */
   function incrementColor(color, r, g, b) {
     const hex = parseInt(color.replace('#', ''), 16);
-    return `${inc(hex >> 16, +r)}${inc(hex >> 8, +g)}${inc(hex, +b)}`;
+    return `${inc(hex >> 16, parseInt(r, 16))}${inc(hex >> 8, parseInt(g, 16))}${inc(
+      hex,
+      parseInt(b, 16)
+    )}`;
   }
 
   /**
@@ -30,7 +33,9 @@
    * @param {number} by
    */
   function inc(clr, by = 0) {
-    return ((clr & 0xff) + by).toString(16).padStart(2, '0');
+    return Math.min((clr & 0xff) + by, 0xff)
+      .toString(16)
+      .padStart(2, '0');
   }
 
   function run() {
@@ -115,6 +120,34 @@
         maxlength="6"
         use:validateHexInput
         use:validateValueInput
+      />
+    </div>
+    <div class="field interval">
+      <label for="interval">
+        <span class="icon"
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+            />
+          </svg></span
+        >
+      </label>
+      <input
+        type="number"
+        id="interval"
+        class="input interval"
+        bind:value={interval}
+        disabled={play}
+        maxlength="6"
       />
     </div>
     <fieldset>
@@ -286,5 +319,31 @@
 
   .form .play:active {
     color: #bbbb;
+  }
+
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+  }
+
+  .form .field.interval {
+    align-items: stretch;
+  }
+
+  .form .field.interval label {
+    display: flex;
+    align-items: center;
+  }
+
+  .form .field.interval .input.interval {
+    align-self: center;
+  }
+
+  .form .field .input.interval {
+    width: 6ch;
+    appearance: textfield;
   }
 </style>
