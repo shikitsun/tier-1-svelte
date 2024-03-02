@@ -39,11 +39,68 @@
     const increment = (/** @type {string} */ val) =>
       setTimeout(() => {
         const value = incrementColor(val, increments.r, increments.g, increments.b);
-        if (current === value) play = false;
+        if (current === value) {
+          play = false;
+          return;
+        }
         current = value;
         currentTimeout = increment(value);
       }, interval);
     currentTimeout = increment(current);
+  }
+
+  const validHexReversed = /^[^\dabcdef]*$/g;
+
+  /**
+   * Validates element is valid hex
+   * @param {string | number} component what validate
+   * @returns {boolean} is valid hex
+   */
+  function validateHex(component) {
+    const val = typeof component === 'number' ? component.toString(16) : component;
+    return validHexReversed.test(val);
+  }
+
+  /**
+   * @type {import("svelte/action").Action<HTMLInputElement>}
+   */
+  function validateHexInput(node) {
+    /**
+     * @this {HTMLInputElement}
+     */
+    function validate() {
+      this.setCustomValidity(validateHex(this.value) ? 'Input custom hex value' : '');
+    }
+    node.addEventListener('input', validate);
+    validate.call(node);
+
+    return {
+      destroy: () => {
+        node.removeEventListener('input', validate);
+      }
+    };
+  }
+
+  /**
+   * @type {import("svelte/action").Action<HTMLInputElement>}
+   */
+  function validateValueInput(node) {
+    /**
+     * @this {HTMLInputElement}
+     */
+    function validate() {
+      this.setCustomValidity(
+        this.value.length !== 3 && this.value.length !== 6 ? 'Value should be valid hex color' : ''
+      );
+    }
+    node.addEventListener('input', validate);
+    validate.call(node);
+
+    return {
+      destroy: () => {
+        node.removeEventListener('input', validate);
+      }
+    };
   }
 </script>
 
@@ -51,7 +108,14 @@
   <div class="form">
     <div class="field">
       <label for="color">#</label>
-      <input id="color" class="color-input" bind:value maxlength="6" />
+      <input
+        id="color"
+        class="color-input"
+        bind:value
+        maxlength="6"
+        use:validateHexInput
+        use:validateValueInput
+      />
     </div>
     <fieldset>
       <svg
@@ -68,15 +132,33 @@
       <legend>Increment</legend>
       <div class="field increment">
         <label for="r" class="color" style="--clr: #780000;" />
-        <input id="r" class="increment-input" bind:value={increments.r} maxlength="2" />
+        <input
+          id="r"
+          class="increment-input"
+          bind:value={increments.r}
+          maxlength="2"
+          use:validateHexInput
+        />
       </div>
       <div class="field increment">
         <label for="g" class="color" style="--clr: #588157;" />
-        <input id="g" class="increment-input" bind:value={increments.g} maxlength="2" />
+        <input
+          id="g"
+          class="increment-input"
+          bind:value={increments.g}
+          maxlength="2"
+          use:validateHexInput
+        />
       </div>
       <div class="field increment">
         <label for="b" class="color" style="--clr: #023e8a;" />
-        <input id="b" class="increment-input" bind:value={increments.b} maxlength="2" />
+        <input
+          id="b"
+          class="increment-input"
+          bind:value={increments.b}
+          maxlength="2"
+          use:validateHexInput
+        />
       </div>
     </fieldset>
     <div class="field">
@@ -143,6 +225,10 @@
   .form .field input {
     all: unset;
     padding: 0.25rem;
+  }
+
+  .form .field:has(input:invalid) {
+    border-color: #9b2226;
   }
 
   .form .field .color-input,
